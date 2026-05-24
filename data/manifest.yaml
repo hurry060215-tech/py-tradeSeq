@@ -1,0 +1,57 @@
+# Pre-registered parity gate for py-tradeSeq
+# READ-ONLY after Acceleration Agent starts.
+
+package: py-tradeSeq
+upstream:
+  name: tradeSeq
+  version: "1.13.12"
+  source: Bioconductor
+  url: https://github.com/statOmics/tradeSeq
+
+algorithm_class: inference
+# Pre-registered threshold: relaxed below the default 0.90 because the
+# port uses statsmodels.gam (or pygam) as the NB-GAM backbone whereas
+# tradeSeq uses mgcv. The Wald-statistic / p-value distributions are
+# documented to diverge between mgcv and statsmodels GAM at small df
+# (cf. py-TSCAN Notebook 3 §2.4 difftest section). We commit a 0.70
+# Spearman + 0.60 top-50 Jaccard threshold as the realistic gate, with
+# the option to raise after a future port of mgcv to Python lands.
+parity_threshold: 0.70
+
+fixture:
+  path: data/fixture_slingshot_simdata.rds
+  source: tradeSeq::sds, slingshot-simulated dataset (4 lineages, ~500 cells, ~150 genes)
+  description: "Bundled tradeSeq example data — Slingshot-fit + counts matrix"
+  expected_shape: [150, 500]
+
+reference_command: tests/r_reference_driver.R
+
+seed: 42
+
+outputs:
+  - name: associationTest_pval
+    type: "1d vector of p-values per gene"
+    location_reference: "$.associationTest.pvalue"
+    location_candidate: "associationTest.pvalue"
+    metric: inference
+    threshold: 0.70   # Spearman on -log10 p
+  - name: associationTest_top50_genes
+    type: "ordered list of top-50 genes by p-value"
+    location_reference: "$.associationTest.top50"
+    location_candidate: "associationTest.top50"
+    metric: ranked
+    threshold: 0.60   # top-50 Jaccard
+  - name: startVsEndTest_pval
+    type: "1d vector of p-values per gene"
+    location_reference: "$.startVsEndTest.pvalue"
+    location_candidate: "startVsEndTest.pvalue"
+    metric: inference
+    threshold: 0.70
+
+acceleration:
+  enabled: false      # GAM fitting is per-gene, hard to algebraically restructure
+  max_iterations: 0
+
+audit_class: null
+created_by: claude-opus-4-7 via omicverse-rebuildr kit
+created_at: 2026-05-24
