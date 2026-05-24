@@ -21,12 +21,13 @@ Algorithm class: inference. Pre-registered thresholds in `data/manifest.yaml`:
 
 from __future__ import annotations
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from .fitting import fitGAM, TradeSeqGAMs
 from .tests_module import associationTest, startVsEndTest, diffEndTest
 from .pattern_tests import patternTest, earlyDETest
 from .diagnostics import nknots, evaluateK
+from .plotting import plotSmoothers
 
 __all__ = [
     "fitGAM",
@@ -38,5 +39,6 @@ __all__ = [
     "earlyDETest",
     "nknots",
     "evaluateK",
+    "plotSmoothers",
     "__version__",
 ]
